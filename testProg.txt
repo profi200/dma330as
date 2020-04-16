@@ -1,0 +1,64 @@
+# Example program from the DMA330 TRM.
+# Set up for burst transfers (4-beat burst, so SB4 and DB4), (word data width, so SS32 and DS32)
+
+    DMAMOV CCR SB4 SS32 DB4 DS32  # test comment
+
+    DMAMOV SAR 0xDEADBEEF
+
+    DMAMOV DAR 0xCAFEBABE
+
+
+    # Initialize peripheral ‘0’
+
+    DMAFLUSHP P0
+
+
+    # Perform peripheral transfers
+
+    # Outer loop - DMAC responds to peripheral requests until peripheral sets drlast_0 = 1
+
+    DMALPFE
+
+
+        # Wait for request, DMAC sets request_type0 flag depending on the request type it receives
+
+        DMAWFP 0, periph
+
+
+        # Set up loop for burst request: first 15 of 16 sets of transactions
+
+        # Note: B suffix - conditionally executed only if request_type0 flag = Burst
+
+        DMALP 15
+
+            DMALDB
+
+            DMASTB
+
+        # Only loop back if servicing a burst, otherwise treat as a NOP
+
+        DMALPENDB
+
+
+        # Perform final transaction (16 of 16). Send the peripheral acknowledgement of burst request completion
+
+        DMALDB
+
+        DMASTPB P0
+
+
+        # Perform transaction if the peripheral signals a single request
+
+        # Note: S suffix - conditionally executed only if request_type0 flag = Single
+
+        DMALDS
+
+        DMASTPS P0
+
+
+    # Exit loop if DMAC receives the last request, that is, drlast_0 = 1
+
+    DMALPEND
+
+
+    DMAEND
