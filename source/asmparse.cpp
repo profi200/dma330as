@@ -106,7 +106,7 @@ int emitGo(u32 argc, const char *const argv[MAX_TOKENS])
 	// TODO: Range check.
 	// TODO: Channel numbers start with "C".
 	inst |= (strtoul(argv[1], nullptr, 0) & INST_GO_CN_MASK)<<INST_GO_CN_SHIFT;
-	inst |= strtoul(argv[2], nullptr, 0)<<INST_GO_IMM_SHIFT;
+	inst |= static_cast<u64>(strtoul(argv[2], nullptr, 0))<<INST_GO_IMM_SHIFT;
 
 	memcpy(&g_progBuf[g_progPos], &inst, 6);
 	g_progPos += 6;
@@ -238,7 +238,7 @@ int emitMov(u32 argc, const char *const argv[MAX_TOKENS])
 	//else if(rd == 2) inst |= 2u<<INST_MOV_RD_SHIFT; // DAR
 	inst |= static_cast<u32>(rd)<<INST_MOV_RD_SHIFT;
 
-	if(argc == 3) inst |= strtoul(argv[2], nullptr, 0)<<INST_MOV_IMM_SHIFT; // TODO: Error checking.
+	if(argc == 3) inst |= static_cast<u64>(strtoul(argv[2], nullptr, 0))<<INST_MOV_IMM_SHIFT; // TODO: Error checking.
 	else
 	{
 		inst |= CCR_DEFAULT_VAL<<INST_MOV_IMM_SHIFT;
@@ -268,12 +268,12 @@ int emitMov(u32 argc, const char *const argv[MAX_TOKENS])
 				{0x7, 22, 0, 0, 7},  {0x7, 25, 0, 0, 15}, {0x7, 28, 1, 8, 128}
 			};
 
-			const u8 mask  = ccrLut[ccrArg].mask;
+			const u64 mask = ccrLut[ccrArg].mask;
 			const u8 shift = ccrLut[ccrArg].shift;
-			inst &= ~(static_cast<u64>(mask)<<(INST_MOV_IMM_SHIFT + shift)); // TODO: Do we need the casts?
+			inst &= ~(mask<<(INST_MOV_IMM_SHIFT + shift));
 
 			const u8 type       = ccrLut[ccrArg].type;
-			u32 val;
+			u32 val = 0;
 			const u8 rangeStart = ccrLut[ccrArg].rangeStart;
 			const u8 rangeEnd   = ccrLut[ccrArg].rangeEnd;
 			if(type < 2)

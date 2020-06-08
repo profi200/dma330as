@@ -62,3 +62,5 @@
 
 
     DMAEND
+
+# More example progs: http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dai0239a/index.html
